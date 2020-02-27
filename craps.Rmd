@@ -41,9 +41,25 @@ Does the code for rolling dice work? One way to check is to see if a simulation 
 # are behaving correctly. I need to put the results in a tibble, since that is
 # what ggplot wants.
 
+number_of_contests <- 1000
+contest_size <- 6
 
-x <- tibble(results = map_int(1:100000, ~ roll_two_dice()))
+#number of rows
+n <- number_of_contests * contest_size
 
+x <- tibble(ishan = map_int(1:n, ~ roll_two_dice()), 
+            john = map_int(1:n, ~ roll_two_dice())) %>%
+     mutate(john_win = john %in% c(7,11)) %>% 
+     mutate(ishan_win = ishan %in% c(7, 11)) %>%  
+  #create a column with just says "Tie" because it will default to tie 
+     mutate(winner = "Tie") %>% 
+  #because they are boolean, you can just use ! or not
+     mutate(winner = ifelse(ishan_win & !john_win, "Ishan", winner), 
+            winner = ifelse(!ishan_win & john_win, "John", winner)) %>% 
+     mutate(contest = rep(1:number_of_contests, each = contest_size) %>% 
+     group_by(contest) %>% 
+     summarize(john_win = sum(winner =="JM"))
+x
 # Once I have a tibble, the standard ggplot works. Would be nice to have the
 # x-axis labels corresponding to the actual roll values, like 2, 3 and so on.
 # Need tyo figure out a way to get the stats_bin warning (or is it a message?)
@@ -65,6 +81,7 @@ x %>%
 # Assume that John Mark is honest. Yeah! How surprising is it to roll 6 winners?
 # How unusual is it to win against Ishan 4 to 0?
 
-
+x %>% 
+  mutate()
 ```
 
